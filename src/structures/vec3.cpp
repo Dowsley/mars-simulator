@@ -1,94 +1,86 @@
 #include "vec3.h"
-
 #include <cmath>
 #include <string>
 
-Vec3::Vec3()
-{
-   e[0] = 0;
-   e[1] = 0;
-   e[2] = 0;
+Vec3::Vec3() : x(0), y(0), z(0) {}
+
+Vec3::Vec3(const Vec2& v, int z) : x(v.x), y(v.y), z(z) {}
+
+Vec3::Vec3(int x, int y, int z) : x(x), y(y), z(z) {}
+
+int Vec3::width() const { return x; }
+int Vec3::height() const { return y; }
+int Vec3::depth() const { return z; }
+int Vec3::GetFlattenedSize() const { return x * y * z; }
+
+void Vec3::SetX(int x) { this->x = x; }
+void Vec3::SetY(int y) { this->y = y; }
+void Vec3::SetZ(int z) { this->z = z; }
+
+std::string Vec3::ToString() const {
+    return std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(z);
 }
 
+Vec3 Vec3::operator-() const { return {-x, -y, -z}; }
+int Vec3::operator[](int i) const { return (&x)[i]; }
+int& Vec3::operator[](int i) { return (&x)[i]; }
 
-Vec3::Vec3(const Vec2& v, int z)
-{
-    e[0] = v.x;
-    e[1] = v.y;
-    e[2] = z;
+bool Vec3::operator==(const Vec3 &v) const {
+    return x == v.x && y == v.y && z == v.z;
 }
 
-Vec3::Vec3(int x, int y, int z)
-{
-    e[0] = x;
-    e[1] = y;
-    e[2] = z;
-}
-
-int Vec3::x() const { return e[0]; }
-int Vec3::y() const { return e[1]; }
-int Vec3::z() const { return e[2]; }
-int Vec3::width() const { return x(); }
-int Vec3::height() const { return y(); }
-int Vec3::depth() const { return z(); }
-
-int Vec3::GetFlattenedSize() const { return e[0] * e[1] * e[2]; }
-
-void Vec3::SetX(int x) { e[0] = x; }
-void Vec3::SetY(int y) { e[1] = y; }
-void Vec3::SetZ(int z) { e[2] = z; }
-
-std::string Vec3::ToString() const
-{
-    return std::to_string(e[0]) + " " + std::to_string(e[1]) + " " + std::to_string(e[2]);
-}
-
-Vec3 Vec3::operator-() const { return {-e[0], -e[1], -e[2]}; }
-int Vec3::operator[](int i) const { return e[i]; }
-int& Vec3::operator[](int i) { return e[i]; }
-
-bool Vec3::operator==(const Vec3 &v) const
-{
-    return e[0] == v[0]
-        && e[1] == v[1]
-        && e[2] == v[2];
-}
-
-Vec3& Vec3::operator+=(const Vec3 &v)
-{
-    e[0] += v[0];
-    e[1] += v[1];
-    e[2] += v[2];
+Vec3& Vec3::operator+=(const Vec3 &v) {
+    x += v.x; y += v.y; z += v.z;
     return *this;
 }
 
-Vec3& Vec3::operator+=(const int t)
-{
-    e[0] += t;
-    e[1] += t;
-    e[2] += t;
+Vec3& Vec3::operator+=(int t) {
+    x += t; y += t; z += t;
     return *this;
 }
 
-Vec3& Vec3::operator*=(const int t)
-{
-    e[0] *= t;
-    e[1] *= t;
-    e[2] *= t;
+Vec3& Vec3::operator*=(int t) {
+    x *= t; y *= t; z *= t;
     return *this;
 }
 
-Vec3& Vec3::operator/=(const int t)
-{
-    return *this *= 1/t;
+Vec3& Vec3::operator/=(int t) {
+    x /= t; y /= t; z /= t;
+    return *this;
 }
 
-Vec3 operator+(const Vec3 &u, const Vec3 &v) { return {u[0] + v[0], u[1] + v[1], u[2] + v[2]}; }
-Vec3 operator+(const Vec3 &u, int val) { return {u[0] + val, u[1] + val, u[2] + val}; }
-Vec3 operator+(int val, const Vec3 &u) { return u + val; }
-Vec3 operator-(const Vec3 &u, const Vec3 &v) { return {u[0] - v[0], u[1] - v[1], u[2] - v[2]}; }
-Vec3 operator*(const Vec3 &u, const Vec3 &v) { return {u[0] * v[0], u[1] * v[1], u[2] * v[2]}; }
-Vec3 operator*(int t, const Vec3 &v) { return {t*v[0], t*v[1], t*v[2]}; }
-Vec3 operator*(const Vec3 &v, int t) { return t * v; }
-Vec3 operator/(Vec3 v, int t) { return (1/t) * v; }
-std::ostream& operator<<(std::ostream &out, const Vec3 &v) { return out << "Vec3(" << v[0] << ' ' << v[1] << ' ' << v[2] << ")"; }
+Vec3 operator+(const Vec3 &u, const Vec3 &v) {
+    return {u.x + v.x, u.y + v.y, u.z + v.z};
+}
+
+Vec3 operator+(const Vec3 &u, int val) {
+    return {u.x + val, u.y + val, u.z + val};
+}
+
+Vec3 operator+(int val, const Vec3 &u) {
+    return u + val;
+}
+
+Vec3 operator-(const Vec3 &u, const Vec3 &v) {
+    return {u.x - v.x, u.y - v.y, u.z - v.z};
+}
+
+Vec3 operator*(const Vec3 &u, const Vec3 &v) {
+    return {u.x * v.x, u.y * v.y, u.z * v.z};
+}
+
+Vec3 operator*(int t, const Vec3 &v) {
+    return {t * v.x, t * v.y, t * v.z};
+}
+
+Vec3 operator*(const Vec3 &v, int t) {
+    return t * v;
+}
+
+Vec3 operator/(Vec3 v, int t) {
+    return {v.x / t, v.y / t, v.z / t};
+}
+
+std::ostream& operator<<(std::ostream &out, const Vec3 &v) {
+    return out << "Vec3(" << v.x << ' ' << v.y << ' ' << v.z << ")";
+}

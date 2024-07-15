@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(live_world_engine)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(X11 REQUIRED)
@@ -45,6 +45,7 @@ add_executable(live_world_engine
         src/main.cpp
         src/tiles/loader.cpp
         src/creatures/loader.cpp
+        src/structures/octree.cpp
 )
 
 target_link_libraries(live_world_engine
@@ -67,6 +68,3 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:live_world_engine>/data
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data $<TARGET_FILE_DIR:live_world_engine>/data
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")

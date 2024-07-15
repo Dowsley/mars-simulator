@@ -63,9 +63,9 @@ std::optional<Vec3> Creature::Update(const World &world) {
                         // Skip checking the starting position itself
                         if (i == 0 && j == 0 && k == 0) continue;
 
-                        target.SetX(pos.x() + i);
-                        target.SetY(pos.y() + j);
-                        target.SetZ(pos.z() + k);
+                        target.SetX(pos.x + i);
+                        target.SetY(pos.y + j);
+                        target.SetZ(pos.z + k);
 
                         if (world.IsThereCreatureAt(target)) {
                             validTargetFound = true;
@@ -85,9 +85,9 @@ std::optional<Vec3> Creature::Update(const World &world) {
                 for (int j = -1; j <= 1 && !validTargetFound; ++j) {
                     for (int k = -1; k <= 1 && !validTargetFound; ++k) {
                         if (i == 0 && j == 0 && k == 0) continue;
-                        newTarget.SetX(target.x() + i);
-                        newTarget.SetY(target.y() + j);
-                        newTarget.SetZ(target.z() + k);
+                        newTarget.SetX(target.x + i);
+                        newTarget.SetY(target.y + j);
+                        newTarget.SetZ(target.z + k);
                         if (world.IsPositionWalkable(newTarget)) {
                             validTargetFound = true;
                         }
@@ -106,7 +106,7 @@ std::optional<Vec3> Creature::Update(const World &world) {
             for (int i = 0; i < 100 && !validTargetFound; ++i) {
                 int dx = dist(gen);
                 int dy = dist(gen);
-                target = Vec3(pos.x() + dx, pos.y() + dy, pos.z());
+                target = Vec3(pos.x + dx, pos.y + dy, pos.z);
 
                 // Check if the selected position is both walkable and empty
                 if (world.IsPositionWalkable(target) && world.IsPositionEmpty(target)) {

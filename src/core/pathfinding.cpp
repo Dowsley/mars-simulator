@@ -5,7 +5,7 @@
 
 struct Vec3Hasher {
     std::size_t operator()(const Vec3 &v) const {
-        return ((std::hash<int>()(v.x()) ^ (std::hash<int>()(v.y()) << 1)) >> 1) ^ (std::hash<int>()(v.z()) << 1);
+        return ((std::hash<int>()(v.x) ^ (std::hash<int>()(v.y) << 1)) >> 1) ^ (std::hash<int>()(v.z) << 1);
     }
 };
 
@@ -28,7 +28,7 @@ bool Pathfinding::_isValid(const World &world, const Vec3 &pos)
 
 float Pathfinding::_heuristic(const World &world, const Vec3 &a, const Vec3 &b)
 {
-    return std::abs(a.x() - b.x()) + std::abs(a.y() - b.y()) + std::abs(a.z() - b.z());
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
 
 std::list<Vec3> Pathfinding::FindPath(const World &world, const Vec3 &start, const Vec3 &end, bool debug)
@@ -86,15 +86,15 @@ std::list<Vec3> Pathfinding::FindPath(const World &world, const Vec3 &start, con
 
             // Check if movement is diagonal
             if (
-                (neighborPos.x() != currentNode->position.x() && neighborPos.y() != currentNode->position.y()) ||
-                (neighborPos.x() != currentNode->position.x() && neighborPos.z() != currentNode->position.z()) ||
-                (neighborPos.y() != currentNode->position.y() && neighborPos.z() != currentNode->position.z())
+                (neighborPos.x != currentNode->position.x && neighborPos.y != currentNode->position.y) ||
+                (neighborPos.x != currentNode->position.x && neighborPos.z != currentNode->position.z) ||
+                (neighborPos.y != currentNode->position.y && neighborPos.z != currentNode->position.z)
             ) {
                 movementCost = 1.414;
             }
 
-            if (neighborPos.z() > currentNode->position.z() &&
-            (neighborPos.x() != currentNode->position.x() || neighborPos.y() != currentNode->position.y())) {
+            if (neighborPos.z > currentNode->position.z &&
+            (neighborPos.x != currentNode->position.x || neighborPos.y != currentNode->position.y)) {
                 movementCost *= 1.5;  // Upward diagonals cost more
             }
 

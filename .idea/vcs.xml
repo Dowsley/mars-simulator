@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/src/engine" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/lib/octree-cpp" vcs="Git" />
   </component>
 </project>

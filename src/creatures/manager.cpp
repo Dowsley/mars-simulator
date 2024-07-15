@@ -1,11 +1,9 @@
 #include "manager.h"
-
-#include <utility>
-
-#include "../core/world.h"
 #include "geometry.h"
+#include "../core/world.h"
+#include <stdexcept>
 
-CreatureManager::CreatureManager(World *world) : ManagerBase<Creature>(world) {
+CreatureManager::CreatureManager(World *world) : ManagerBase<Creature>(world), octree({{0, 0, 0}, world->GetDimensions()}) {
     registry.Initialize();
 }
 
@@ -14,40 +12,46 @@ CreatureManager::~CreatureManager() {
 }
 
 Creature* CreatureManager::GetItemAt(const Vec3 &pos) const {
-    int index = GeometryUtils::Flatten3DCoords(pos, worldRef->GetDimensions());
-    auto it = items.find(index);
-    return (it != items.end()) ? it->second : nullptr;
+    auto hits = octree.Query(Octree::Sphere{{pos.x, pos.y, pos.z}, 0.001f}); // Use a very small radius to mimic point query
+    return !hits.empty() ? hits.front().Data : nullptr;
 }
 
 void CreatureManager::TraverseItems(std::function<void(Creature*)> callback) {
-    for (auto& item : items) {
-        callback(item.second);
+    auto hits = octree.Query(Octree::All());
+    for (const auto& hit : hits) {
+        callback(hit.Data);
     }
 }
 
 int CreatureManager::GetTotalItemCount() const {
-    return items.size();
+    return octree.Size();
 }
 
 void CreatureManager::ClearItems() {
-    for (auto& item : items) {
-        delete item.second;
-        item.second = nullptr;
+    auto hits = octree.Query(Octree::All());
+    for (const auto& hit : hits) {
+        delete hit.Data;
     }
-    items.clear();
+    // Manually clear the octree
+    _clearOctree(octree);
 }
 
-const CreatureType* CreatureManager::GetTypeById(const std::string &id) const
-{
+void CreatureManager::_clearOctree(Octree& octree) {
+    auto hits = octree.Query(Octree::All());
+    for (const auto& hit : hits) {
+        octree.Remove(hit); // Remove each item from the octree
+    }
+}
+
+const CreatureType* CreatureManager::GetTypeById(const std::string &id) const {
     return registry.GetTypeById(id);
 }
 
-Creature* CreatureManager::InstanceCreature(const std::string &typeID, const Vec3 &pos)
-{
-    int index = GeometryUtils::Flatten3DCoords(pos, worldRef->GetDimensions());
+Creature* CreatureManager::InstanceCreature(const std::string &typeID, const Vec3 &pos) {
+    auto hits = octree.Query(Octree::Sphere{{pos.x, pos.y, pos.z}, 0.001f}); // Use a very small radius to mimic point query
 
     // If creature already exists at that position
-    if (items.find(index) != items.end()) {
+    if (!hits.empty()) {
         return nullptr;
     }
 
@@ -57,56 +61,55 @@ Creature* CreatureManager::InstanceCreature(const std::string &typeID, const Vec
     }
 
     auto *newCreature = new Creature(*type, pos);
-    items[index] = newCreature;
+    octree.Add({.Vector{pos}, .Data=newCreature});
 
     return newCreature;
 }
 
-void CreatureManager::RemoveCreatureAt(const Vec3 &pos)
-{
-    int index = GeometryUtils::Flatten3DCoords(pos, worldRef->GetDimensions());
-    if(items.find(index) != items.end()) {
-        delete items[index]; // Delete the creature from the heap
-        items.erase(index);  // Remove the entry from the map
+void CreatureManager::RemoveCreatureAt(const Vec3 &pos) {
+    auto hits = octree.Query(Octree::Sphere{{pos.x, pos.y, pos.z}, 0.001f}); // Use a very small radius to mimic point query
+    if (!hits.empty()) {
+        delete hits.front().Data; // Delete the creature from the heap
+        octree.Remove(hits.front()); // Remove the creature from the octree
     }
 }
 
-void CreatureManager::UpdateCreatures(const World &world)
-{
-    std::unordered_map<int, Creature*> updatedItems;
+void CreatureManager::UpdateCreatures(const World &world) {
+    auto hits = octree.Query(Octree::All());
+    Octree updatedOctree({{0, 0, 0}, world.GetDimensions()});
 
-    for(auto& pair : items) {
-        Creature *creature = pair.second;
+    for (auto& hit : hits) {
+        Creature *creature = hit.Data;
         std::optional<Vec3> posOpt = creature->Update(world);
 
         if (!posOpt.has_value()) {
-            updatedItems[pair.first] = creature;  // No movement, keep creature in its current position
+            updatedOctree.Add(hit);
             continue;
         }
 
         Vec3 newPos = posOpt.value();
         if (!worldRef->IsInBounds(newPos) || !worldRef->IsPositionWalkable(newPos)) {
-            updatedItems[pair.first] = creature;  // Invalid move, keep creature in its current position
+            updatedOctree.Add(hit);
             continue;
         }
-        int newIndex = GeometryUtils::Flatten3DCoords(newPos, worldRef->GetDimensions());
-        if (updatedItems.find(newIndex) != updatedItems.end()) {
-            updatedItems[pair.first] = creature;  // Position already taken in this update cycle, keep creature in its current position
+
+        auto newHit = Octree::TDataWrapper{.Vector{newPos}, .Data=creature};
+        if (!updatedOctree.Query(Octree::Sphere{{newPos.x, newPos.y, newPos.z}, 0.001f}).empty()) {
+            updatedOctree.Add(hit);
             continue;
         }
 
         creature->SetPosition(newPos);
-        updatedItems[newIndex] = creature;
+        updatedOctree.Add(newHit);
     }
 
-    items.swap(updatedItems);
+    octree = std::move(updatedOctree);
 }
 
 void CreatureManager::ClearCreatures() {
     ClearItems();
 }
 
-std::vector<const CreatureType*> CreatureManager::GetAllTypes() const
-{
+std::vector<const CreatureType*> CreatureManager::GetAllTypes() const {
     return registry.GetAllTypes();
 }

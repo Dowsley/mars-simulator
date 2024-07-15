@@ -20,7 +20,7 @@ void LiveWorldEngine::_drawWorld()
             bool isPath = false;
             if (viewMode.tracePath == 2) {
                 for (auto & p : viewMode.path) {
-                    isPath = p.x() == mapX && p.y() == mapY && p.z() == currDepth;
+                    isPath = p.x == mapX && p.y == mapY && p.z == currDepth;
                     if (isPath) {
                         break;
                     }

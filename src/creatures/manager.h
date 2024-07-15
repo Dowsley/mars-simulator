@@ -4,12 +4,14 @@
 #include "../core/settings.h"
 #include "creature.h"
 #include "registry.h"
-#include <unordered_map>
+#include "../structures/octree.h"
 
 class CreatureManager : public ManagerBase<Creature> {
 private:
     CreatureRegistry registry = CreatureRegistry(Settings::CREATURE_REGISTRY_PATH);
-    std::unordered_map<int, Creature*> items;
+    Octree octree;
+
+    void _clearOctree(Octree& octree);
 
 public:
     explicit CreatureManager(World *world);

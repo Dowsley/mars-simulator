@@ -54,8 +54,8 @@ bool World::IsPositionWalkable(const Vec3 &pos) const
         return false; // Tile occupied by creature or solid block
     }
 
-    Vec3 below{pos.x(), pos.y(), pos.z() + 1};
-    if (below.z() < 0) {
+    Vec3 below{pos.x, pos.y, pos.z + 1};
+    if (below.z < 0) {
         return false; // Below tile is literally empty void below the map. TODO: Careful here.
     }
 
@@ -104,9 +104,9 @@ void World::_swapTiles(Tile *tile1, Tile *tile2)
 bool World::IsInBounds(const Vec3 &pos) const
 {
     bool res =
-        (pos.x() < dimensions.width() && pos.x() >= 0)
-        && (pos.y() < dimensions.height() && pos.y() >= 0)
-        && (pos.z() < dimensions.depth() && pos.z() >= 0);
+        (pos.x < dimensions.width() && pos.x >= 0)
+        && (pos.y < dimensions.height() && pos.y >= 0)
+        && (pos.z < dimensions.depth() && pos.z >= 0);
     return res;
 }
 
